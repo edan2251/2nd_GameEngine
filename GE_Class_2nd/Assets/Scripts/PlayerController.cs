@@ -31,9 +31,6 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        //if (Cursor.lockState != CursorLockMode.Locked) return;
-
-        //if (cinemachineSwitcher.usingFreeLook == true) return;
 
         if (cinemachineSwitcher.usingFreeLook == false)
         {
