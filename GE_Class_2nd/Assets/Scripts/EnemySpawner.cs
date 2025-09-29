@@ -27,7 +27,7 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    void OnDrawGizosSelected()
+    private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(transform.position, new Vector3(spawnRange * spawnRange * 2, 0.1f, spawnRange * 2));

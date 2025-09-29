@@ -29,6 +29,9 @@ public class Projectile : MonoBehaviour
             Enemy hitEnemy = other.GetComponent<Enemy>();
             if (hitEnemy != null)
             {
+                //Enemy 스크립트에서 효과 실행.
+                hitEnemy.FlashOnHit();
+
                 hitEnemy.HP -= Damage;   
                 if (hitEnemy.HP <= 0)
                 {
