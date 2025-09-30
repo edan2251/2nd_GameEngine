@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.AI;
 
 public class Enemy : MonoBehaviour
 {
@@ -14,31 +14,51 @@ public class Enemy : MonoBehaviour
     public float attackRange = 6f;
     public float attackCooldown = 1.5f;
 
+
+    private HealthBarManager healthBarManager;
+
     public GameObject projectilePrefab;
     public Transform firePoint;
 
-    private Transform player;
+    public Transform player;
 
     private float lastAttackTime;
     public int maxHp = 5;
     public int currentHP;
-
-    private Slider HealthBar;
 
     public float flashDuration = 0.1f; // 빨갛게 유지되는 시간
     private Renderer enemyRenderer;
     private Color originalColor;
 
 
+    //---------------AI 제작------------------
+    private UnityEngine.AI.NavMeshAgent agent;
+    //----------------------------------------
+
     // Start is called before the first frame update
-    void Start()
+    public void Start()
     {
-        HealthBar.value = 1f;
+        currentHP = maxHp;
+
+        healthBarManager = FindObjectOfType<HealthBarManager>();
+        if (healthBarManager != null)
+        {
+            healthBarManager.RegisterEnemy(this); // 매니저에 자신(Enemy)을 등록
+        }
 
         player = GameObject.FindGameObjectWithTag("Player").transform;
 
         lastAttackTime = -attackCooldown;
-        currentHP = maxHp;
+
+
+        //---------------AI 제작------------------
+        agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (agent != null)
+        {
+            agent.speed = moveSpeed; // 이동 속성을 스크립트 변수와 연결
+        }
+        //----------------------------------------
+
 
         enemyRenderer = GetComponentInChildren<Renderer>();
         if (enemyRenderer != null)
@@ -74,7 +94,7 @@ public class Enemy : MonoBehaviour
                     state = EnemyState.Idle;
                 else
                     TracePlayer();
-                    break;
+                break;
 
             case EnemyState.Attack:
                 if (dist > attackRange)
@@ -90,32 +110,68 @@ public class Enemy : MonoBehaviour
                     state = EnemyState.Idle;
                 else
                     RunAway();
-                    break;
+                break;
         }
     }
 
     void RunAway()
     {
-        Vector3 dir = (player.position - transform.position).normalized;
-        transform.position += dir * -moveSpeed * 2 * Time.deltaTime;
+        //----------------기본코드-----------------------
+        //Vector3 dir = (player.position - transform.position).normalized;
+        //transform.position += dir * -moveSpeed * 2 * Time.deltaTime;
 
-        Vector3 oppositeDirection = -dir;
+        //Vector3 oppositeDirection = -dir;
 
-        transform.rotation = Quaternion.LookRotation(oppositeDirection);
+        //transform.rotation = Quaternion.LookRotation(oppositeDirection);
+        //-----------------------------------------------
+
+        //-------------------------------AI제작---------------------------------------------
+        if (agent == null) return;
+
+        if (agent.speed != moveSpeed * 2f)
+        {
+            agent.speed = moveSpeed * 2f;
+        }
+
+        Vector3 runDirection = transform.position - player.position;
+        Vector3 destination = transform.position + runDirection.normalized * traceRange;
+        agent.SetDestination(destination);
+        //--------------------------------------------------------------------------------
     }
 
     void TracePlayer()
     {
-        Vector3 dir = (player.position - transform.position).normalized;
-        transform.position += dir * moveSpeed * Time.deltaTime;
-        transform.LookAt(player.position);
+        //-----------------------기본코드-------------------------------
+        //Vector3 dir = (player.position - transform.position).normalized;
+        //transform.position += dir * moveSpeed * Time.deltaTime;
+        //transform.LookAt(player.position);
+        //--------------------------------------------------------------
+
+        //-------------------------AI-------------------------------------
+        if (agent == null) return;
+
+        if (agent.speed != moveSpeed)
+        {
+            agent.speed = moveSpeed;
+        }
+
+        agent.SetDestination(player.position);
+        //--------------------------------------------------------------
     }
 
     void AttackPlayer()
     {
         //일정 쿨다운마다 발사
-        if(Time.time >= lastAttackTime + attackCooldown)
+        if (Time.time >= lastAttackTime + attackCooldown)
         {
+
+            if (agent == null) return;
+
+            if (agent.speed != moveSpeed)
+            {
+                agent.speed = moveSpeed;
+            }
+
             lastAttackTime = Time.time;
             ShootProjectile();
         }
@@ -146,37 +202,28 @@ public class Enemy : MonoBehaviour
     // 피격 시 빨갛게 깜빡이는 코루틴
     IEnumerator FlashColor()
     {
-        // 피격 시 색상을 빨간색으로 변경
         if (enemyRenderer != null)
         {
-            enemyRenderer.material.color = Color.red;
-        }
+            // 피격 시 색상을 빨간색으로 변경
+            enemyRenderer.material.SetColor("_BaseColor", Color.red);
 
-        // flashDuration 만큼 대기
-        yield return new WaitForSeconds(flashDuration);
+            yield return new WaitForSeconds(flashDuration);
 
-        // 원래 색상으로 복구
-        if (enemyRenderer != null)
-        {
-            enemyRenderer.material.color = originalColor;
+            // 원래 색상으로 복구
+            enemyRenderer.material.SetColor("_BaseColor", originalColor);
         }
     }
 
-    public void SetupHealthBar(Canvas canvas, Camera camera)
-    {
-        //HealthBar.transform.SetParent(Canvas.transform);
-        //if(HealthBar.TryGetComponent<MainCamera>(out MainCamera faceCamera))
-        //{
-        //    faceCamera.Camera = Camera;
-        //}
-    }
 
     public void TakeDamage(int damage)
     {
         FlashOnHit();
         currentHP -= damage;
 
-        HealthBar.value = (float)currentHP / maxHp;
+        if (healthBarManager != null)
+        {
+            healthBarManager.UpdateEnemyHealth(this);
+        }
 
         if (currentHP <= 0)
         {
@@ -186,7 +233,10 @@ public class Enemy : MonoBehaviour
 
     void Die()
     {
-        Destroy(HealthBar.gameObject);
+        if (healthBarManager != null)
+        {
+            healthBarManager.UnregisterEnemy(this);
+        }
         Destroy(gameObject);
     }
 }

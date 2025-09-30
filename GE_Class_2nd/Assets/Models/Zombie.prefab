@@ -126,6 +126,7 @@ GameObject:
   - component: {fileID: 6813936935695874128}
   - component: {fileID: 3334483637794280360}
   - component: {fileID: 2778247624350658775}
+  - component: {fileID: -4850552601171849296}
   m_Layer: 0
   m_Name: Zombie
   m_TagString: Enemy
@@ -213,13 +214,36 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   state: 0
-  moveSpeed: 2
+  moveSpeed: 4
   traceRange: 15
   attackRange: 6
   attackCooldown: 1.5
   projectilePrefab: {fileID: 5566118784764316683, guid: 2c56496bf97d13341805ae87c207069c,
     type: 3}
   firePoint: {fileID: 7615184474788125461}
+  player: {fileID: 0}
   maxHp: 5
   currentHP: 0
   flashDuration: 0.1
+--- !u!195 &-4850552601171849296
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5030271969264784280}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 7
+  m_Acceleration: 15
+  avoidancePriority: 50
+  m_AngularSpeed: 180
+  m_StoppingDistance: 5
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
