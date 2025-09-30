@@ -2,6 +2,7 @@ using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -23,14 +24,27 @@ public class PlayerController : MonoBehaviour
 
     public CinemachineSwitcher cinemachineSwitcher;
 
+    public int maxHP = 100;
+    public int currentHP;
+
+    public Slider hpSlider;
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
         pov = virtualCam.GetCinemachineComponent<CinemachinePOV>();
+
+        currentHP = maxHP;
+        hpSlider.value = 1f;
     }
 
     void Update()
     {
+        if(Input.GetKeyDown(KeyCode.Tab))
+        {
+            pov.m_HorizontalAxis.Value = transform.eulerAngles.y;
+            pov.m_VerticalAxis.Value = 0f;
+        }
 
         if (cinemachineSwitcher.usingFreeLook == false)
         {
@@ -101,4 +115,19 @@ public class PlayerController : MonoBehaviour
         controller.Move(velocity * Time.deltaTime);
     }
 
+    public void TakeDamage(int damage)
+    {
+        currentHP -= damage;
+        hpSlider.value = (float)currentHP / maxHP;
+
+        if(currentHP <= 0)
+        {
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        Destroy(gameObject);
+    }
 }

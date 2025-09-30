@@ -23,6 +23,7 @@ public class EnemySpawner : MonoBehaviour
                 transform.position.z + Random.Range(-spawnRange, spawnRange)
                 );
             Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+            //enemyPrefab.GetComponent<enemyPrefab>().SetupHealthBar(HealthBarCnvas, Camera);
             timer = 0f;
         }
     }

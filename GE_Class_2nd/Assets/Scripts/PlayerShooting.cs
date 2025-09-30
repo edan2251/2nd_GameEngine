@@ -47,7 +47,10 @@ using UnityEngine;
 public class PlayerShooting : MonoBehaviour
 {
     public GameObject projectilePrefab;   
-    public GameObject bombPrefab;         
+    public GameObject bombPrefab;
+
+    public GameObject handedBomb;
+    public GameObject handedGun;
 
     public Transform firePoint;
     Camera cam;
@@ -57,6 +60,15 @@ public class PlayerShooting : MonoBehaviour
     void Start()
     {
         cam = Camera.main;
+
+        if (handedBomb != null)
+        {
+            handedBomb.SetActive(useBomb); // useBomb이 false라면 비활성화된 상태로 시작
+        }
+        if (handedGun != null)
+        {
+            handedGun.SetActive(useBomb == false); 
+        }
     }
 
     void Update()
@@ -66,6 +78,19 @@ public class PlayerShooting : MonoBehaviour
         {
             useBomb = !useBomb;
             Debug.Log(useBomb ? "폭탄 모드" : "총알 모드");
+
+            // --- handedBomb 활성화/비활성화 로직 추가 ---
+            if (handedBomb != null) // null 체크는 안전을 위해 권장됩니다.
+            {
+                handedBomb.SetActive(useBomb);
+            }
+            // ------------------------------------------
+            // --- handedGun 활성화/비활성화 로직 추가 ---
+            if (handedGun != null) // null 체크는 안전을 위해 권장됩니다.
+            {
+                handedGun.SetActive(useBomb == false);
+            }
+            // ------------------------------------------
         }
 
         // 발사
